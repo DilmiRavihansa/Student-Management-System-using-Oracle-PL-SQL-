@@ -1,0 +1,117 @@
+1: List All Classes with the Number of Students in Each Class
+      
+
+
+BEGIN
+FOR rec IN (
+SELECT C.class_name, COUNT(S.student_id) AS student_count
+FROM Class C
+JOIN Student S ON C.class_id = S.class_id
+GROUP BY C.class_name
+HAVING COUNT(S.student_id) > 1
+ORDER BY student_count DESC
+) LOOP
+DBMS_OUTPUT.PUT_LINE('Class: ' || rec.class_name || ' | Students: ' || rec.student_count);
+END LOOP;
+   END;
+/
+
+
+
+2: Get class Teacher's name by entering specific class name.
+
+
+ BEGIN
+ FOR rec IN (
+ SELECT T.first_name || ' ' || T.last_name AS teacher_name, C.class_name
+ FROM Teacher T
+ JOIN Class C ON T.teacher_id = C.teacher_id
+ WHERE C.class_name LIKE '%A%'
+ ORDER BY T.last_name
+ ) LOOP
+ DBMS_OUTPUT.PUT_LINE('Teacher: ' || rec.teacher_name);
+ END LOOP;
+ END;
+ /
+
+
+
+
+
+
+
+
+
+3: Check if a Student is Enrolled in a Classs
+
+CREATE OR REPLACE PROCEDURE check_student_enrollment(
+p_student_id IN NUMBER
+) AS
+v_class_count NUMBER;
+BEGIN
+SELECT COUNT(*)
+INTO v_class_count
+FROM Student
+WHERE student_id = p_student_id;
+
+IF v_class_count > 0 THEN
+DBMS_OUTPUT.PUT_LINE('Student is enrolled in a class.');
+ELSE
+DBMS_OUTPUT.PUT_LINE('Student is NOT enrolled in a class.');
+END IF;
+END;
+/
+
+
+BEGIN
+check_student_enrollment(7); 
+END;
+/
+
+
+
+
+
+4:Get Students’ Age Groups Using a CASE Statement
+
+
+BEGIN
+FOR rec IN (
+SELECT first_name || ' ' || last_name AS student_name,
+FLOOR((SYSDATE - date_of_birth) / 365) AS age,
+CASE
+WHEN FLOOR((SYSDATE - date_of_birth) / 365) < 18 THEN 'Under 18'
+WHEN FLOOR((SYSDATE - date_of_birth) / 365) BETWEEN 18 AND 22 THEN '18-22'
+ELSE 'Above 22'
+END AS age_group
+FROM Student
+ORDER BY age_group
+) LOOP
+DBMS_OUTPUT.PUT_LINE('Student: ' || rec.student_name || ' | Age: ' || rec.age || ' | Group: ' || rec.age_group);
+END LOOP;
+END;
+/
+
+
+
+
+
+
+
+
+
+5: Retrieve Students from Specific Classes.  
+
+
+BEGIN
+FOR rec IN (
+SELECT S.first_name || ' ' || S.last_name AS student_name, C.class_name
+FROM Student S
+JOIN Class C ON S.class_id = C.class_id
+WHERE C.class_name = 'Math 101' OR C.class_name = 'English 201'
+ORDER BY C.class_name, S.last_name
+) LOOP
+DBMS_OUTPUT.PUT_LINE('Student: ' || rec.student_name || ' | Class: ' || rec.class_name);
+END LOOP;
+END;
+/
